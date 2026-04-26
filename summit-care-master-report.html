@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DHCP Failover Master Report | Summit Care Medical Clinic</title>
+    <meta
+      name="description"
+      content="Standalone master report for the Summit Care Medical Clinic DHCP failover project covering Windows Server 2022 DHCP, Cisco ASA emergency backup DHCP, Proxmox virtualization, risk analysis, and recovery workflow."
+    />
+    <link rel="stylesheet" href="master-report.css?v=print-bw-2" />
+  </head>
+  <body>
+    <main class="report-shell">
+      <section class="hero title-page" id="top">
+        <span class="eyebrow">Master Report</span>
+        <h1>DHCP Failover Project Workflow</h1>
+        <p class="subtitle">
+          A condensed infrastructure report for Summit Care Medical Clinic focused on
+          Windows Server 2022 DHCP, Cisco ASA emergency DHCP failover, Proxmox
+          virtualization, DNS dependency planning, and recovery operations. The purpose of
+          the project is to improve uptime, redundancy, and service continuity so the
+          office can stay as operational as possible even if the primary DHCP server fails.
+        </p>
+        <div class="title-meta">
+          <span class="title-chip">Dell PowerEdge R740xd</span>
+          <span class="title-chip">Proxmox Type 1 Hypervisor</span>
+          <span class="title-chip">Windows Server 2022 DHCP</span>
+          <span class="title-chip">Cisco Backup DHCP</span>
+        </div>
+        <div class="title-signoff">
+          <div class="title-signoff-card">
+            <h3>Purpose & Goal</h3>
+            <p>
+              Build a supportable DHCP continuity design that reduces the chance of a
+              single Windows service failure interrupting address delivery for office
+              workstations, front-desk systems, and other wired clinic devices.
+            </p>
+          </div>
+          <div class="title-signoff-card">
+            <h3>Design Principle</h3>
+            <p>
+              Keep Windows Server as the primary DHCP authority, use Cisco only as an
+              emergency path during outage conditions, and return cleanly to the normal
+              service model after recovery.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="toc">
+        <h2>Table Of Contents</h2>
+        <div class="toc-grid">
+          <a href="#summary">1. Executive Summary</a>
+          <a href="#overview">2. Overview & Strategy</a>
+          <a href="#architecture">3. Architecture & Configuration</a>
+          <a href="#operations">4. Operations & Recovery</a>
+          <a href="#risk">5. Risk, Governance & Conclusion</a>
+        </div>
+      </section>
+
+      <section class="section" id="summary">
+        <div class="kicker">Executive Focus</div>
+        <h2>What This Project Is Designed To Prove</h2>
+        <p class="lead">
+          This report presents Summit Care Medical Clinic as a realistic healthcare
+          infrastructure scenario focused on one high-value objective: keep internal office
+          devices receiving valid IP configuration even if the primary Windows DHCP service
+          becomes unavailable, so the office can remain as operational as possible during
+          outage conditions.
+        </p>
+        <div class="three-col">
+          <div class="mini-card">
+            <h4>Primary Service Model</h4>
+            <p>
+              Summit Care uses a Windows Server 2022 virtual machine on Proxmox as the
+              normal DHCP and DNS authority for the internal office LAN. This keeps lease
+              administration, DNS behavior, reservations, and support workflow centralized.
+            </p>
+          </div>
+          <div class="mini-card">
+            <h4>Emergency Continuity Model</h4>
+            <p>
+              If the domain controller at 10.40.10.10 stops responding, the Cisco edge
+              device enables an emergency DHCP pool so wired devices can still obtain an
+              address, default gateway, and basic external connectivity while IT restores
+              the primary server.
+            </p>
+          </div>
+          <div class="mini-card">
+            <h4>Failback Discipline</h4>
+            <p>
+              When the Windows server comes back online and health checks stabilize, the
+              Cisco backup pool is turned off again so the clinic returns to the primary
+              service model and avoids long-term split administration.
+            </p>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Important design note:</strong> this is not native Microsoft DHCP
+          failover between two Windows servers. It is a layered continuity design that
+          uses a Cisco backup service for outage coverage while preserving Windows as the
+          primary DHCP authority.
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="kicker">Overview & Strategy</div>
+        <h2>Purpose, Goals & Summit Care Blueprint</h2>
+        <p class="lead">
+          The project goal is straightforward: improve uptime, reduce the operational
+          impact of DHCP service failure, and keep the office infrastructure usable during
+          an outage window. Rather than replacing Windows with Cisco, the strategy is to
+          preserve Windows as the richer management platform while giving the clinic a
+          practical emergency DHCP bridge on the network edge.
+        </p>
+        <div class="two-col">
+          <div class="mini-card">
+            <h4>Operational Objectives</h4>
+            <ul class="workflow-list">
+              <li>Reduce the chance that a single Windows DHCP outage stops new devices from joining the LAN.</li>
+              <li>Support near-continuous address availability for front-desk, nursing, office, and wired workstation users.</li>
+              <li>Preserve administrative clarity by automatically falling back to Windows DHCP after recovery.</li>
+              <li>Support a more resilient office infrastructure posture built around uptime, redundancy, and cleaner failover recovery.</li>
+            </ul>
+          </div>
+          <div class="mini-card">
+            <h4>Resilience Snapshot</h4>
+            <div class="bar-list">
+              <div class="bar-row">
+                <span>Primary DHCP availability target</span>
+                <div class="bar-track"><i style="width: 96%;"></i></div>
+                <strong>96%</strong>
+              </div>
+              <div class="bar-row">
+                <span>Fallback service coverage</span>
+                <div class="bar-track"><i style="width: 82%;"></i></div>
+                <strong>82%</strong>
+              </div>
+              <div class="bar-row">
+                <span>Administrative visibility during failover</span>
+                <div class="bar-track"><i style="width: 74%;"></i></div>
+                <strong>74%</strong>
+              </div>
+              <div class="bar-row">
+                <span>Internet continuity for wired devices</span>
+                <div class="bar-track"><i style="width: 88%;"></i></div>
+                <strong>88%</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h3>Summit Care Blueprint Snapshot</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Role</th>
+              <th>Value To The Design</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dell PowerEdge R740xd</td>
+              <td>Physical compute host</td>
+              <td>Stable enterprise hardware base for critical infrastructure VMs</td>
+            </tr>
+            <tr>
+              <td>Proxmox VE</td>
+              <td>Type 1 hypervisor</td>
+              <td>Supports better recovery posture, snapshots, and host-level organization</td>
+            </tr>
+            <tr>
+              <td>Windows Server 2022</td>
+              <td>Primary DHCP and DNS</td>
+              <td>Provides full administrative depth and domain-aware integration</td>
+            </tr>
+            <tr>
+              <td>Cisco edge firewall/router</td>
+              <td>Emergency DHCP backup</td>
+              <td>Supplies temporary lease continuity when the primary server is unavailable</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="architecture">
+        <div class="kicker">Architecture & Configuration</div>
+        <h2>Platform Roles, Scope Design & Actual Build Workflow</h2>
+        <p class="lead">
+          The internal office LAN uses 10.40.10.0/24. Windows Server 2022 owns the normal
+          lease range at 10.40.10.100 through 10.40.10.199, while Cisco is staged with a
+          separate emergency-only range at 10.40.10.210 through 10.40.10.230. The default
+          gateway remains 10.40.10.1, and the domain controller health-check IP remains
+          10.40.10.10.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Example Value</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Network</td>
+              <td>10.40.10.0/24</td>
+              <td>Internal office LAN</td>
+            </tr>
+            <tr>
+              <td>Windows primary range</td>
+              <td>10.40.10.100 - 10.40.10.199</td>
+              <td>Main dynamic pool for desktops and office devices</td>
+            </tr>
+            <tr>
+              <td>Infrastructure exclusion</td>
+              <td>10.40.10.1 - 10.40.10.99</td>
+              <td>Preserves room for statics, printers, switches, and servers</td>
+            </tr>
+            <tr>
+              <td>Cisco emergency range</td>
+              <td>10.40.10.210 - 10.40.10.230</td>
+              <td>Emergency-only lease pool during outage conditions</td>
+            </tr>
+            <tr>
+              <td>Default gateway</td>
+              <td>10.40.10.1</td>
+              <td>Consistent traffic exit path in both normal and failover states</td>
+            </tr>
+            <tr>
+              <td>Primary DNS</td>
+              <td>10.40.10.10</td>
+              <td>Supports normal internal name resolution and domain-aware operation</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Windows Server DHCP Manager Implementation</h3>
+        <ol class="workflow-list">
+          <li>Build the Windows Server 2022 VM on Proxmox and assign 10.40.10.10 as a static address.</li>
+          <li>Install the DHCP Server role from Server Manager, complete post-install steps, and authorize the service in Active Directory.</li>
+          <li>Open DHCP Manager, create the IPv4 office scope for 10.40.10.0/24, and define the primary pool as 10.40.10.100 through 10.40.10.199.</li>
+          <li>Add exclusions for infrastructure space, then set router 10.40.10.1, DNS 10.40.10.10, lease timing, and any needed reservations.</li>
+          <li>Activate the scope and verify that a test client successfully receives a lease from Windows before introducing any backup logic.</li>
+        </ol>
+
+        <h3>Cisco ASA Backup DHCP & Health-Based Activation</h3>
+        <p>
+          A realistic sample platform for this report is a Cisco ASA 5516-X or Firepower
+          1010 running ASA software. In this design, the ASA is not a full Windows-style
+          failover partner. It is an emergency responder that is staged on the inside
+          network and only activated when the Windows server path is unavailable.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>ASA Step</th>
+              <th>Configuration Intent</th>
+              <th>Why It Matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Create backup pool</td>
+              <td>Stage 10.40.10.210 through 10.40.10.230 on the inside interface</td>
+              <td>Keeps emergency leases separate from the primary Windows range</td>
+            </tr>
+            <tr>
+              <td>Set DHCP options</td>
+              <td>Apply gateway, lease values, and outage-mode DNS behavior</td>
+              <td>Lets clients receive usable network settings during server loss</td>
+            </tr>
+            <tr>
+              <td>Keep inactive by default</td>
+              <td>Do not leave the ASA DHCP responder active during normal Windows service</td>
+              <td>Prevents split administration and overlapping lease behavior</td>
+            </tr>
+            <tr>
+              <td>Control with health checks</td>
+              <td>Only enable the backup pool when 10.40.10.10 is confirmed down</td>
+              <td>Makes failover conditional rather than permanent</td>
+            </tr>
+            <tr>
+              <td>Disable after recovery</td>
+              <td>Turn the emergency pool off when Windows is healthy again</td>
+              <td>Returns DHCP authority to the primary platform</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="code-block">sample ASA outage workflow
+
+monitor 10.40.10.10 from the edge
+if health checks fail beyond threshold:
+  enable backup DHCP scope on inside interface
+
+if health checks recover and remain stable:
+  disable backup DHCP scope
+  return lease authority to Windows Server</div>
+      </section>
+
+      <section class="section" id="operations">
+        <div class="kicker">Operations & Recovery</div>
+        <h2>Trigger Logic, Testing Flow & Failback Routine</h2>
+        <p class="lead">
+          The health-check side of the workflow watches whether the domain controller at
+          10.40.10.10 is reachable. If reachability fails long enough to meet the outage
+          threshold, the Cisco edge activates the emergency DHCP path so renewing or newly
+          connected wired clients can still obtain valid IP configuration.
+        </p>
+        <div class="two-col">
+          <div class="mini-card">
+            <h4>Trigger Logic</h4>
+            <ol class="workflow-list">
+              <li>Cisco repeatedly probes 10.40.10.10.</li>
+              <li>If the failure threshold is met, the emergency DHCP pool is enabled.</li>
+              <li>Clients renewing during the outage receive fallback leases from Cisco.</li>
+              <li>Once the server is healthy again, the backup pool is disabled and Windows resumes authority.</li>
+            </ol>
+          </div>
+          <div class="mini-card">
+            <h4>Runbook Flow</h4>
+            <ol class="workflow-list">
+              <li>Confirm 10.40.10.10 is unreachable from the Cisco edge.</li>
+              <li>Verify the emergency scope is active.</li>
+              <li>Test a wired client for lease issuance and outside internet access.</li>
+              <li>Restore the Windows VM or DHCP service and confirm stable response.</li>
+              <li>Verify Cisco disables the emergency scope and Windows retakes the primary role.</li>
+            </ol>
+          </div>
+        </div>
+        <h3>Testing Checklist</h3>
+        <ul class="workflow-list">
+          <li>Simulate a DHCP service stop on Windows.</li>
+          <li>Simulate a full Windows VM outage from the Proxmox side.</li>
+          <li>Validate emergency lease delivery from the Cisco pool.</li>
+          <li>Check whether wired clients keep basic internet reachability.</li>
+          <li>Restore Windows and verify clean failback behavior.</li>
+        </ul>
+        <div class="callout">
+          <strong>Operational truth:</strong> Cisco ASA DHCP is effective for emergency
+          continuity, but it does not provide the same day-to-day administrative depth,
+          reservation experience, or Windows-integrated DNS behavior as the primary server.
+        </div>
+      </section>
+
+      <section class="section" id="risk">
+        <div class="kicker">Risk, Governance & Conclusion</div>
+        <h2>Tradeoffs, Risk Controls & Final Engineering Takeaway</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Risk</th>
+              <th>Impact</th>
+              <th>Mitigation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Primary DHCP outage</td>
+              <td>New or rebooted devices may lose addressing</td>
+              <td>Cisco emergency pool keeps leases flowing during the outage</td>
+            </tr>
+            <tr>
+              <td>False failover activation</td>
+              <td>Confusion if both platforms appear active</td>
+              <td>Threshold-based health checks and separate address pools reduce the blast radius</td>
+            </tr>
+            <tr>
+              <td>Internal DNS degradation</td>
+              <td>Internet access may survive while internal names fail</td>
+              <td>Restore Windows quickly and document reduced outage-mode capability</td>
+            </tr>
+            <tr>
+              <td>Operational drift</td>
+              <td>Backup configuration becomes messy over time</td>
+              <td>Keep Cisco emergency-only and fail back to Windows automatically</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>What Cisco DHCP Does Less Well</h3>
+        <ul class="workflow-list">
+          <li>It offers less comfortable day-to-day lease visibility than DHCP Manager.</li>
+          <li>It reduces Windows-integrated DNS, reservations, and policy depth during outage mode.</li>
+          <li>It is appropriate as a continuity layer, not as the preferred long-term primary service.</li>
+        </ul>
+        <h3>Improvement Roadmap</h3>
+        <div class="bar-list">
+          <div class="bar-row">
+            <span>Native Windows-to-Windows DHCP failover</span>
+            <div class="bar-track"><i style="width: 92%;"></i></div>
+            <strong>High</strong>
+          </div>
+          <div class="bar-row">
+            <span>Expanded Proxmox recovery and host replication</span>
+            <div class="bar-track"><i style="width: 84%;"></i></div>
+            <strong>Strong</strong>
+          </div>
+          <div class="bar-row">
+            <span>Advanced monitoring and event reporting</span>
+            <div class="bar-track"><i style="width: 86%;"></i></div>
+            <strong>Strong</strong>
+          </div>
+          <div class="bar-row">
+            <span>Automated lease and DNS cleanup review</span>
+            <div class="bar-track"><i style="width: 72%;"></i></div>
+            <strong>Useful</strong>
+          </div>
+        </div>
+        <p>
+          The final takeaway is that this design delivers a practical outage bridge for a
+          healthcare office: Windows Server 2022 remains the preferred DHCP and DNS
+          platform, Proxmox and UPS posture strengthen the primary path, and Cisco edge
+          DHCP provides a temporary continuity layer when the primary server is down. It
+          is honest about its limits, clear about its purpose, and organized as a
+          professional infrastructure workflow.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
